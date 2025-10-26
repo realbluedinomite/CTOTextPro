@@ -1,0 +1,276 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TonePreference {
+  CASUAL
+  NEUTRAL
+  FORMAL
+  CONFIDENT
+}
+
+enum FeedbackDetail {
+  SUMMARY
+  DETAILED
+  ACTIONABLE
+}
+
+enum ScenarioCategory {
+  COMMUNICATION
+  LEADERSHIP
+  STRATEGY
+  NEGOTIATION
+  PERFORMANCE
+  CUSTOMER_SUCCESS
+}
+
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum Mode {
+  COACHING
+  SIMULATION
+}
+
+enum MessageRole {
+  USER
+  COACH
+  PERSONA
+}
+
+enum ScoreMetric {
+  TONE
+  CLARITY
+  PROFESSIONALISM
+  GRAMMAR
+}
+
+enum BadgeCode {
+  FIRST_SESSION
+  STREAK_BRONZE
+  STREAK_SILVER
+  STREAK_GOLD
+  TEN_SESSIONS
+  PERFECT_TONE
+}
+
+enum PreferenceKey {
+  UI_THEME
+  LANGUAGE_OVERRIDE
+  NOTIFICATION_DIGEST
+  EXPERIMENTAL_FEATURES
+}
+
+model User {
+  id               String              @id
+  email            String              @unique
+  displayName      String?
+  photoURL         String?
+  providerId       String?
+  provider         String?
+  createdAt        DateTime            @default(now())
+  profile          Profile?
+  analytics        AnalyticsAggregate?
+  badges           Badge[]
+  streaks          Streak[]
+  preferences      Preference[]
+  sessions         Session[]
+  customScenarios  CustomScenario[]
+  uploadReferences UploadReference[]
+}
+
+model Profile {
+  id                   String         @id @default(cuid())
+  userId               String         @unique
+  language             String         @default("en")
+  tonePreference       TonePreference @default(NEUTRAL)
+  feedbackDetail       FeedbackDetail @default(SUMMARY)
+  darkMode             Boolean        @default(false)
+  notifySessionRecaps  Boolean        @default(true)
+  notifyStreaks        Boolean        @default(true)
+  notifyProductUpdates Boolean        @default(false)
+  timezone             String?
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  user                 User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Persona {
+  id            String      @id @default(cuid())
+  name          String
+  role          String
+  description   String
+  toneGuidance  String?
+  difficultyMin Difficulty?
+  difficultyMax Difficulty?
+  tags          String[]    @default([])
+  isDefault     Boolean     @default(false)
+  scenarios     Scenario[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model Scenario {
+  id          String           @id @default(cuid())
+  slug        String           @unique
+  title       String
+  description String
+  category    ScenarioCategory
+  personaId   String?
+  difficulty  Difficulty
+  prompt      String
+  isSeeded    Boolean          @default(false)
+  unlockLevel Int?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  persona     Persona?         @relation(fields: [personaId], references: [id], onDelete: SetNull)
+  sessions    Session[]
+}
+
+model CustomScenario {
+  id              String      @id @default(cuid())
+  userId          String
+  title           String
+  context         String
+  objectives      String
+  personaOverride Json?
+  difficulty      Difficulty?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessions        Session[]
+
+  @@unique([userId, title])
+}
+
+model Session {
+  id                   String          @id @default(cuid())
+  userId               String
+  scenarioId           String?
+  customScenarioId     String?
+  mode                 Mode
+  difficulty           Difficulty
+  personaSnapshot      Json?
+  startedAt            DateTime        @default(now())
+  completedAt          DateTime?
+  userConfidence       Int?
+  responseTimeMsAvg    Int?
+  promptTokenCount     Int?
+  completionTokenCount Int?
+  totalTokenCount      Int?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+  user                 User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scenario             Scenario?       @relation(fields: [scenarioId], references: [id], onDelete: SetNull)
+  customScenario       CustomScenario? @relation(fields: [customScenarioId], references: [id], onDelete: SetNull)
+  messages             Message[]
+  feedback             Feedback?
+  scores               Score[]
+
+  @@unique([userId, startedAt])
+}
+
+model Message {
+  id        String      @id @default(cuid())
+  sessionId String
+  role      MessageRole
+  content   Json
+  createdAt DateTime    @default(now())
+  latencyMs Int?
+  session   Session     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model Feedback {
+  id                   String   @id @default(cuid())
+  sessionId            String   @unique
+  summary              String
+  grammarNotes         Json?
+  phrasingAlternatives Json?
+  createdAt            DateTime @default(now())
+  session              Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model Score {
+  id        String      @id @default(cuid())
+  sessionId String
+  metric    ScoreMetric
+  value     Decimal     @db.Decimal(5, 2)
+  weight    Decimal     @db.Decimal(5, 2)
+  delta     Decimal     @db.Decimal(5, 2)
+  session   Session     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model AnalyticsAggregate {
+  id                   String    @id @default(cuid())
+  userId               String    @unique
+  totalSessions        Int       @default(0)
+  avgTone              Decimal?  @db.Decimal(5, 2)
+  avgClarity           Decimal?  @db.Decimal(5, 2)
+  avgProfessionalism   Decimal?  @db.Decimal(5, 2)
+  avgGrammar           Decimal?  @db.Decimal(5, 2)
+  streakCount          Int       @default(0)
+  longestStreak        Int       @default(0)
+  badgesEarned         Int       @default(0)
+  level                Int       @default(1)
+  lastSessionAt        DateTime?
+  toneConsistencyScore Decimal?  @db.Decimal(5, 2)
+  grammarErrorRate     Decimal?  @db.Decimal(5, 2)
+  responseTimeAvg      Int?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Badge {
+  id          String    @id @default(cuid())
+  userId      String
+  code        BadgeCode
+  name        String
+  description String?
+  earnedAt    DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, code])
+}
+
+model Streak {
+  id        String    @id @default(cuid())
+  userId    String
+  startDate DateTime
+  endDate   DateTime?
+  length    Int
+  active    Boolean   @default(true)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Preference {
+  id        String        @id @default(cuid())
+  userId    String
+  key       PreferenceKey
+  value     Json
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, key])
+}
+
+model UploadReference {
+  id               String   @id @default(cuid())
+  userId           String
+  originalTitle    String
+  originalTextHash String
+  rewrite          Json?
+  annotations      Json?
+  createdAt        DateTime @default(now())
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

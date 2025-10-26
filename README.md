@@ -98,6 +98,7 @@ graph TD
    - Set a **JWT secret** for row-level security if not auto-generated and add it to `SUPABASE_JWT_SECRET`.
 3. Under **Database → Connection pooling**, grab the connection string and map it to `DATABASE_URL`. Adjust the port/user/password as needed.
 4. Run the migrations (see [Database Migrations & Seeding](#database-migrations--seeding)).
+5. Prisma reads the connection string from `DATABASE_URL`, so ensure `.env.local` (or your deployment secrets) matches the Supabase project you intend to target.
 
 ### Upstash Configuration
 

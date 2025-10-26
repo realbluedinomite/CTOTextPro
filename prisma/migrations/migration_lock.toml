@@ -1,0 +1,2 @@
+# This file ensures that the Prisma migrations are applied using the correct datasource provider.
+provider = "postgresql"
