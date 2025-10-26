@@ -1,0 +1,49 @@
+[1mdiff --git a/tsconfig.json b/tsconfig.json[m
+[1mindex 5b49c75..905003c 100644[m
+[1m--- a/tsconfig.json[m
+[1m+++ b/tsconfig.json[m
+[36m@@ -1,7 +1,11 @@[m
+ {[m
+   "compilerOptions": {[m
+     "target": "ES2017",[m
+[31m-    "lib": ["dom", "dom.iterable", "esnext"],[m
+[32m+[m[32m    "lib": [[m
+[32m+[m[32m      "dom",[m
+[32m+[m[32m      "dom.iterable",[m
+[32m+[m[32m      "esnext"[m
+[32m+[m[32m    ],[m
+     "allowJs": false,[m
+     "skipLibCheck": true,[m
+     "strict": true,[m
+[36m@@ -15,9 +19,27 @@[m
+     "incremental": true,[m
+     "baseUrl": ".",[m
+     "paths": {[m
+[31m-      "@/*": ["./src/*"][m
+[31m-    }[m
+[32m+[m[32m      "@/*": [[m
+[32m+[m[32m        "./src/*"[m
+[32m+[m[32m      ][m
+[32m+[m[32m    },[m
+[32m+[m[32m    "plugins": [[m
+[32m+[m[32m      {[m
+[32m+[m[32m        "name": "next"[m
+[32m+[m[32m      }[m
+[32m+[m[32m    ][m
+   },[m
+[31m-  "include": ["next-env.d.ts", "src/**/*.ts", "src/**/*.tsx", "next.config.js", "tailwind.config.ts", "postcss.config.mjs", "middleware.ts"],[m
+[31m-  "exclude": ["node_modules"][m
+[32m+[m[32m  "include": [[m
+[32m+[m[32m    "next-env.d.ts",[m
+[32m+[m[32m    "src/**/*.ts",[m
+[32m+[m[32m    "src/**/*.tsx",[m
+[32m+[m[32m    "next.config.js",[m
+[32m+[m[32m    "tailwind.config.ts",[m
+[32m+[m[32m    "postcss.config.mjs",[m
+[32m+[m[32m    "middleware.ts",[m
+[32m+[m[32m    ".next/types/**/*.ts"[m
+[32m+[m[32m  ],[m
+[32m+[m[32m  "exclude": [[m
+[32m+[m[32m    "node_modules"[m
+[32m+[m[32m  ][m
+ }[m
