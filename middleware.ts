@@ -7,7 +7,7 @@ const csp = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self' data:",
-  "connect-src 'self'",
+  "connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://oauth2.googleapis.com https://apis.google.com https://accounts.google.com https://github.com https://api.github.com",
   "frame-ancestors 'self'",
 ].join('; ');
 
