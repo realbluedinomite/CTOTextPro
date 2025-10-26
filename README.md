@@ -149,12 +149,14 @@ Point your tests or local config to the emulator by setting `FIREBASE_EMULATOR_H
 
 ### Database Migrations & Seeding
 
-After installing dependencies and configuring `.env.local`, run:
+After installing dependencies and configuring `.env.local`, ensure your `DATABASE_URL` points to a reachable Postgres instance, then run:
 
 ```bash
 pnpm prisma migrate dev      # Apply local migrations & generate types
-pnpm prisma db seed          # Seed baseline data (rubrics, demo users, etc.)
+pnpm db:seed                 # Alias for pnpm prisma db seed
 ```
+
+The seed script is idempotent and will upsert the baseline personas, scenarios, and achievement badges referenced throughout the product. It also backfills analytics baselines for any existing users, so it is safe to execute multiple times.
 
 In CI or production deployments use:
 
@@ -162,6 +164,8 @@ In CI or production deployments use:
 pnpm prisma migrate deploy
 pnpm db:seed                 # Idempotent seed script for production/sandbox
 ```
+
+> ℹ️  Make sure migrations have been applied before seeding—otherwise the tables required for personas, scenarios, badges, and analytics baselines will not exist.
 
 ### Run the Development Server
 
