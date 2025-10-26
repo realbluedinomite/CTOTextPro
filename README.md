@@ -60,6 +60,28 @@ graph TD
 - **Edge/Node split:** Conversations and evaluations are latency-sensitive and run on the Vercel Edge runtime. File uploads and any multipart parsing rely on the Node runtime.
 - **Background Tasks:** Upstash Redis is used for rate limiting, job queues, and websocket fan-out (via Upstash QStash or Redis Streams).
 
+## Authentication & Session Management
+
+The backend bridges Firebase Authentication to the Next.js App Router runtime via secure HTTP-only cookies:
+
+- Configure the Firebase Admin SDK with either the single-line `FIREBASE_SERVICE_ACCOUNT` secret or the split `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, and `FIREBASE_PRIVATE_KEY` values.
+- Session cookies are issued with `SameSite=Lax`, marked `HttpOnly`, and only flagged as `Secure` outside of local development.
+- Default sessions last five days; passing `remember: true` when exchanging an ID token extends the lifetime to the 14 day Firebase maximum.
+- On first sign-in the API upserts a `User`, `Profile`, and `UserAnalytics` row so subsequent requests always have hydrated context.
+
+### Session lifecycle endpoints
+
+1. **Create / refresh:** `POST /api/auth/session` with `{ idToken, remember? }` verifies the Firebase ID token, mints a session cookie, and returns the persisted profile + preferences payload.
+2. **Fetch:** `GET /api/auth/session` returns the serialised user if the session cookie is valid.
+3. **Logout:** `DELETE /api/auth/session` clears the cookie and revokes Firebase refresh tokens for the current user.
+
+### Middleware behaviour & refresh cues
+
+- The `middleware.ts` layer attaches security headers and enforces authentication for `/app`, `/practice`, `/progress`, `/settings`, and all `/api/*` routes except those under `/api/auth`.
+- Unauthenticated API requests receive a `401` JSON response, while browser navigation is redirected to `/sign-in` with a `redirectTo` hint.
+- When a session cookie is within 12 hours of expiring, the middleware adds an `x-session-refresh: 1` response header—clients should call `currentUser.getIdToken(true)` and repeat the `POST /api/auth/session` exchange to keep the cookie fresh.
+- Logging out simply issues a `DELETE /api/auth/session`, which clears the cookie and optionally revokes Firebase sessions so other devices sign out too.
+
 ## Prerequisites
 
 - **Node.js** ≥ 18.18 (matches Vercel Node 18 baseline) – consider using `nvm`.

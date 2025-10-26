@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+import { AuthenticationError, requireAuthenticatedUser } from '@/lib/auth/server';
 import {
   findPracticeScenarioById,
   type PracticeDifficulty,
@@ -37,6 +38,16 @@ const adjectiveForScore = (score: number) => {
 };
 
 export async function POST(request: Request) {
+  try {
+    await requireAuthenticatedUser();
+  } catch (error) {
+    if (error instanceof AuthenticationError) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    throw error;
+  }
+
   let body: EvaluateRequestBody | null = null;
 
   try {
