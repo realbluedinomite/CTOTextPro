@@ -1,19 +1,39 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "functions": {
-    "app/api/chat/route.ts": {
-      "runtime": "edge"
-    },
-    "app/api/evaluate/route.ts": {
-      "runtime": "edge"
-    },
-    "app/api/uploads/route.ts": {
-      "runtime": "nodejs20.x"
-    },
-    "middleware.ts": {
-      "runtime": "edge"
+  "version": 2,
+  "framework": "nextjs",
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "same-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "accelerometer=(), camera=(), microphone=(), geolocation=()"
+        }
+      ]
     }
-  },
-  "installCommand": "pnpm install",
-  "buildCommand": "pnpm build"
+  ],
+  "functions": {
+    "api/**/*.ts": {
+      "runtime": "nodejs20.x",
+      "memory": 1024,
+      "maxDuration": 30
+    }
+  }
 }
