@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum DifficultyLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum ScenarioCategory {
+  INTERVIEWS
+  WORKPLACE
+  NETWORKING
+  CLIENT
+}
+
+model Persona {
+  id               String   @id @default(cuid())
+  name             String   @unique
+  slug             String   @unique
+  toneGuidance     String
+  samplePrompts    String[] @default([])
+  difficultyLevels Json
+  avatarUrl        String?
+  tags             String[] @default([])
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  scenarios Scenario[]
+}
+
+model Scenario {
+  id                   String           @id @default(cuid())
+  slug                 String           @unique
+  title                String
+  description          String
+  objective            String
+  category             ScenarioCategory
+  basePrompts          String[]         @default([])
+  defaultDifficulty    DifficultyLevel
+  unlockLevel          Int              @default(0)
+  isSeeded             Boolean          @default(false)
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  recommendedPersonaId String?
+  recommendedPersona   Persona?         @relation(fields: [recommendedPersonaId], references: [id])
+
+  @@index([category])
+}
+
+model Badge {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  description String
+  unlockRules Json?
+  isSeeded    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  displayName String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  analytics UserAnalytics?
+}
+
+model UserAnalytics {
+  id                      String    @id @default(cuid())
+  userId                  String    @unique
+  totalConversations      Int       @default(0)
+  totalScenariosCompleted Int       @default(0)
+  totalBadgesEarned       Int       @default(0)
+  streakDays              Int       @default(0)
+  lastActivityAt          DateTime?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
