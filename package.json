@@ -14,16 +14,21 @@
     "db:seed": "pnpm prisma db seed"
   },
   "dependencies": {
+    "@hookform/resolvers": "^3.4.1",
     "@prisma/client": "^5.20.1",
     "@radix-ui/react-slot": "^1.2.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "firebase": "^10.14.1",
+    "idb-keyval": "^6.2.1",
     "lucide-react": "^0.451.0",
     "next": "14.2.5",
     "next-themes": "^0.3.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "tailwind-merge": "^2.3.0"
+    "react-hook-form": "^7.53.0",
+    "tailwind-merge": "^2.3.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "20.12.7",
