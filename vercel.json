@@ -1,0 +1,19 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "app/api/chat/route.ts": {
+      "runtime": "edge"
+    },
+    "app/api/evaluate/route.ts": {
+      "runtime": "edge"
+    },
+    "app/api/uploads/route.ts": {
+      "runtime": "nodejs20.x"
+    },
+    "middleware.ts": {
+      "runtime": "edge"
+    }
+  },
+  "installCommand": "pnpm install",
+  "buildCommand": "pnpm build"
+}
