@@ -347,7 +347,9 @@ async function seedBadges() {
 }
 
 async function seedAnalyticsBaselines() {
-  const users = await prisma.user.findMany({ select: { id: true } });
+  const users = await prisma.user.findMany({
+    select: { id: true, email: true, displayName: true },
+  });
 
   if (users.length === 0) {
     console.info('No users found; analytics baselines will be created when users onboard.');
@@ -355,6 +357,20 @@ async function seedAnalyticsBaselines() {
   }
 
   for (const user of users) {
+    await prisma.profile.upsert({
+      where: { userId: user.id },
+      update: {},
+      create: {
+        userId: user.id,
+        displayName: user.displayName ?? user.email,
+        preferences: {
+          theme: 'system',
+          practiceTips: true,
+          rememberLastScenario: true,
+        },
+      },
+    });
+
     await prisma.userAnalytics.upsert({
       where: { userId: user.id },
       update: {},
